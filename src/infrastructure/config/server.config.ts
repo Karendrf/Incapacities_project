@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 
+// Cargar variables de entorno
 config();
 
 export const serverConfig = {
@@ -9,4 +10,5 @@ export const serverConfig = {
   jwtSecret: process.env.JWT_SECRET || 'your_jwt_secret_key_here_change_in_production',
   jwtExpiration: process.env.JWT_EXPIRATION || '24h',
   serviceName: process.env.SERVICE_NAME || 'payroll-service',
+  logLevel: process.env.LOG_LEVEL || 'info',
 };

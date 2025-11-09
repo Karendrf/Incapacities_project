@@ -5,5 +5,6 @@ export declare const serverConfig: {
     jwtSecret: string;
     jwtExpiration: string;
     serviceName: string;
+    logLevel: string;
 };
 //# sourceMappingURL=server.config.d.ts.map

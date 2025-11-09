@@ -18,7 +18,6 @@ class Database {
         return Database.instance;
     }
     setupEventListeners() {
-        // No direct pool events in Sequelize, but we can log connection attempts
         this.logger.info('Database configuration loaded');
     }
     getSequelize() {
@@ -40,11 +39,13 @@ class Database {
             // Initialize models
             (0, models_1.initModels)(this.sequelize);
             this.logger.info('Models initialized successfully');
-            // Sync database (create tables if they don\'t exist)
+            // Sync database
             await this.sequelize.sync({ alter: false });
             this.logger.info('Database synchronized successfully');
-            // Seed companies if needed
+            // Seed companies
             await this.seedCompanies();
+            // Seed auth users (NUEVO)
+            await this.seedAuthUsers();
         }
         catch (error) {
             this.logger.error('Error initializing database', error);
@@ -91,12 +92,53 @@ class Database {
                 await models_1.CompanyModel.bulkCreate(companies);
                 this.logger.info(`${companies.length} companies seeded successfully`);
             }
-            else {
-                this.logger.info(`${count} companies already exist in database`);
-            }
         }
         catch (error) {
             this.logger.error('Error seeding companies', error);
+        }
+    }
+    // NUEVO: Seed de usuarios de prueba
+    async seedAuthUsers() {
+        try {
+            const count = await models_1.AuthUserModel.count();
+            if (count === 0) {
+                this.logger.info('Seeding auth users...');
+                const users = [
+                    {
+                        username: 'admin',
+                        password: 'admin123', // En producción usa bcrypt
+                        role: 'administrador',
+                        document: '1234567890',
+                        name: 'Administrador Principal',
+                    },
+                    {
+                        username: 'empleado1',
+                        password: 'emp123',
+                        role: 'empleado',
+                        document: '9876543210',
+                        name: 'Juan Empleado',
+                    },
+                ];
+                await models_1.AuthUserModel.bulkCreate(users);
+                this.logger.info(`${users.length} auth users seeded successfully`);
+                // Mostrar credenciales en consola
+                this.logger.info('═'.repeat(60));
+                this.logger.info('USUARIOS DE PRUEBA CREADOS:');
+                this.logger.info('═'.repeat(60));
+                this.logger.info('ADMINISTRADOR:');
+                this.logger.info('  Username: admin');
+                this.logger.info('  Password: admin123');
+                this.logger.info('  Role: administrador');
+                this.logger.info('');
+                this.logger.info('EMPLEADO:');
+                this.logger.info('  Username: empleado1');
+                this.logger.info('  Password: emp123');
+                this.logger.info('  Role: empleado');
+                this.logger.info('═'.repeat(60));
+            }
+        }
+        catch (error) {
+            this.logger.error('Error seeding auth users', error);
         }
     }
     async close() {
@@ -106,20 +148,6 @@ class Database {
         }
         catch (error) {
             this.logger.error('Error closing database connection', error);
-            throw error;
-        }
-    }
-    // Transaction helper
-    async transaction(callback) {
-        const t = await this.sequelize.transaction();
-        try {
-            const result = await callback();
-            await t.commit();
-            return result;
-        }
-        catch (error) {
-            await t.rollback();
-            this.logger.error('Transaction rolled back', error);
             throw error;
         }
     }

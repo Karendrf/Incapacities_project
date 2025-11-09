@@ -10,7 +10,7 @@ export declare class Database {
     testConnection(): Promise<boolean>;
     initialize(): Promise<void>;
     private seedCompanies;
+    private seedAuthUsers;
     close(): Promise<void>;
-    transaction<T>(callback: () => Promise<T>): Promise<T>;
 }
 //# sourceMappingURL=database.d.ts.map
