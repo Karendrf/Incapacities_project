@@ -9,48 +9,46 @@ import { ValidationError } from '../../shared/errors/ValidationError';
 import { Validator } from '../../shared/utils/validator';
 import { Logger } from '../../shared/utils/logger';
 
+/**
+ * Servicio encargado de manejar la lógica de negocio de las nóminas.
+ */
 export class PayrollService implements IPayrollService {
   private readonly logger: Logger;
-
   constructor(private readonly payrollRepository: IPayrollRepository) {
     this.logger = new Logger('PayrollService');
   }
 
+  /**
+   * Crea una nueva nómina
+   */
   public async createPayroll(payrollData: CreatePayrollDto): Promise<Payroll> {
     this.logger.info('Creating new payroll', { userDocument: payrollData.userDocument });
-
-    // Validate required fields
+    // Validar campos requeridos
     Validator.validateRequiredFields(payrollData, ['userDocument', 'companyId', 'status']);
-
-    // Validate document format
+    // Validar documento
     if (!Validator.isValidDocument(payrollData.userDocument)) {
       throw new ValidationError('Formato de documento inválido. Debe contener entre 6 y 15 dígitos');
     }
-
-    // Validate company exists
+    // Validar existencia de la empresa
     const company = await this.payrollRepository.getCompanyById(payrollData.companyId);
     if (!company) {
       throw new NotFoundError(`Empresa con ID ${payrollData.companyId} no encontrada`);
     }
-
-    // Validate status
+    // Validar estado
     if (!Validator.isValidStatus(payrollData.status)) {
       throw new ValidationError('Estado de nómina inválido. Use: activo o retirado');
     }
-
-    // Check if user already has a payroll
+    // Validar si ya existe nómina para ese documento
     const existingPayroll = await this.payrollRepository.findByUserDocument(payrollData.userDocument);
     if (existingPayroll) {
       throw new ValidationError(
         `El usuario con documento ${payrollData.userDocument} ya tiene una nómina registrada`
       );
     }
-
-    // Sanitize optional fields
+    // Normalizar texto opcional
     if (payrollData.position) {
       payrollData.position = Validator.sanitizeString(payrollData.position);
     }
-
     try {
       const payroll = await this.payrollRepository.create(payrollData);
       this.logger.info('Payroll created successfully', { 
@@ -64,38 +62,35 @@ export class PayrollService implements IPayrollService {
     }
   }
 
+  /**
+   * Actualiza una nómina existente
+   */
   public async updatePayroll(id: number, payrollData: UpdatePayrollDto): Promise<Payroll> {
     this.logger.info('Updating payroll', { id });
-
-    // Validate ID
+    // Validar ID
     if (!Validator.isPositiveInteger(id)) {
       throw new ValidationError('ID de nómina inválido');
     }
-
-    // Check if payroll exists
+    // Validar existencia de la nómina
     const existingPayroll = await this.payrollRepository.findById(id);
     if (!existingPayroll) {
       throw new NotFoundError(`Nómina con ID ${id} no encontrada`);
     }
-
-    // Validate company if provided
+    // Validar empresa si viene en la actualización
     if (payrollData.companyId) {
       const company = await this.payrollRepository.getCompanyById(payrollData.companyId);
       if (!company) {
         throw new NotFoundError(`Empresa con ID ${payrollData.companyId} no encontrada`);
       }
     }
-
-    // Validate status if provided
+    // Validar estado si viene en la actualización
     if (payrollData.status && !Validator.isValidStatus(payrollData.status)) {
       throw new ValidationError('Estado de nómina inválido. Use: activo o retirado');
     }
-
-    // Sanitize optional fields
+    // Normalizar texto opcional
     if (payrollData.position) {
       payrollData.position = Validator.sanitizeString(payrollData.position);
     }
-
     try {
       const updatedPayroll = await this.payrollRepository.update(id, payrollData);
       this.logger.info('Payroll updated successfully', { id });
@@ -106,80 +101,85 @@ export class PayrollService implements IPayrollService {
     }
   }
 
+  /**
+   * Obtiene una nómina por su ID
+   */
   public async getPayrollById(id: number): Promise<PayrollWithDetails> {
     this.logger.info('Getting payroll by ID', { id });
-
     if (!Validator.isPositiveInteger(id)) {
       throw new ValidationError('ID de nómina inválido');
     }
-
     const payroll = await this.payrollRepository.findById(id);
     if (!payroll) {
       throw new NotFoundError(`Nómina con ID ${id} no encontrada`);
     }
-
     return payroll;
   }
 
+  /**
+   * Obtiene todas las nóminas
+   */
   public async getAllPayrolls(): Promise<PayrollWithDetails[]> {
     this.logger.info('Getting all payrolls');
     return await this.payrollRepository.findAll();
   }
 
+  /**
+   * Busca una nómina por documento del usuario
+   */
   public async getPayrollByUserDocument(userDocument: string): Promise<Payroll> {
     this.logger.info('Getting payroll by user document', { userDocument });
-
     if (!Validator.isValidDocument(userDocument)) {
       throw new ValidationError('Formato de documento inválido. Debe contener entre 6 y 15 dígitos');
     }
-
     const payroll = await this.payrollRepository.findByUserDocument(userDocument);
     if (!payroll) {
       throw new NotFoundError(`No se encontró nómina para el documento ${userDocument}`);
     }
-
     return payroll;
   }
 
+  /**
+   * Busca la nómina activa de un usuario
+   */
   public async getActivePayrollByUserDocument(userDocument: string): Promise<Payroll> {
     this.logger.info('Getting active payroll by user document', { userDocument });
-
     if (!Validator.isValidDocument(userDocument)) {
       throw new ValidationError('Formato de documento inválido. Debe contener entre 6 y 15 dígitos');
     }
-
     const payroll = await this.payrollRepository.findActiveByUserDocument(userDocument);
     if (!payroll) {
       throw new NotFoundError(
         `No se encontró nómina activa para el documento ${userDocument}`
       );
     }
-
     return payroll;
   }
 
+  /**
+   * Obtiene todas las empresas registradas
+   */
   public async getAllCompanies(): Promise<Company[]> {
     this.logger.info('Getting all companies');
     return await this.payrollRepository.getAllCompanies();
   }
 
+  /**
+   * Elimina una nómina
+   */
   public async deletePayroll(id: number): Promise<void> {
     this.logger.info('Deleting payroll', { id });
-
     if (!Validator.isPositiveInteger(id)) {
       throw new ValidationError('ID de nómina inválido');
     }
-
     const exists = await this.payrollRepository.findById(id);
     if (!exists) {
       throw new NotFoundError(`Nómina con ID ${id} no encontrada`);
     }
-
     const deleted = await this.payrollRepository.delete(id);
     if (!deleted) {
       throw new Error('Error al eliminar la nómina');
     }
-
     this.logger.info('Payroll deleted successfully', { id });
   }
 }

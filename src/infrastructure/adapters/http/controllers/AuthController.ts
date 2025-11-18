@@ -12,7 +12,9 @@ export class AuthController {
   }
 
   /**
-   * Endpoint de login
+   * Maneja el inicio de sesión de un usuario.
+   * Recibe username y password, delega al AuthService
+   * y devuelve un token JWT junto con los datos del usuario.
    */
   public login = async (
     req: Request,
@@ -20,7 +22,7 @@ export class AuthController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      this.logger.info('POST /login - User attempting to login');
+      this.logger.info('POST /login - Usuario intentando iniciar sesión');
 
       const { username, password } = req.body;
 
@@ -33,7 +35,8 @@ export class AuthController {
   };
 
   /**
-   * Endpoint para obtener información del usuario actual
+   * Devuelve la información del usuario autenticado.
+   * El usuario viene adjunto en req.user desde el middleware de autenticación.
    */
   public me = async (
     req: Request,
@@ -41,7 +44,6 @@ export class AuthController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      // El usuario ya está en req.user por el middleware de autenticación
       res.status(200).json({
         success: true,
         user: req.user,

@@ -12,6 +12,10 @@ export class PayrollController {
     this.logger = new Logger('PayrollController');
   }
 
+  /**
+   * Crea una nueva nómina
+   * Extrae los datos del cuerpo de la petición y llama al servicio para crear la nómina.
+   */
   public createPayroll = async (
     req: Request,
     res: Response,
@@ -41,6 +45,10 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Actualiza una nómina existente por ID
+   * Solo actualiza los campos enviados por el usuario.
+   */
   public updatePayroll = async (
     req: Request,
     res: Response,
@@ -74,6 +82,9 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Obtiene una nómina por su ID
+   */
   public getPayrollById = async (
     req: Request,
     res: Response,
@@ -94,6 +105,9 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Obtiene todas las nóminas del sistema
+   */
   public getAllPayrolls = async (
     _req: Request,
     res: Response,
@@ -114,6 +128,9 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Obtiene una nómina por el documento del usuario
+   */
   public getPayrollByUserDocument = async (
     req: Request,
     res: Response,
@@ -136,6 +153,9 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Obtiene la nómina activa de un usuario por documento
+   */
   public getActivePayrollByUserDocument = async (
     req: Request,
     res: Response,
@@ -160,6 +180,9 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Obtiene todas las empresas registradas
+   */
   public getAllCompanies = async (
     _req: Request,
     res: Response,
@@ -180,6 +203,9 @@ export class PayrollController {
     }
   };
 
+  /**
+   * Elimina una nómina por ID
+   */
   public deletePayroll = async (
     req: Request,
     res: Response,
