@@ -1,0 +1,1 @@
+{"version":3,"file":"CreatePayrollDto.d.ts","sourceRoot":"","sources":["../../../src/application/dto/CreatePayrollDto.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,kCAAkC,CAAC;AACjE,MAAM,WAAW,gBAAgB;IAC/B,YAAY,EAAE,MAAM,CAAC;IACrB,SAAS,EAAE,MAAM,CAAC;IAClB,QAAQ,CAAC,EAAE,MAAM,CAAC;IAClB,MAAM,EAAE,aAAa,CAAC;CACvB"}

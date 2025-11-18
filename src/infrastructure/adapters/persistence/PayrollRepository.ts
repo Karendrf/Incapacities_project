@@ -6,19 +6,11 @@ import { UpdatePayrollDto } from '../../../application/dto/UpdatePayrollDto';
 import { PayrollModel, CompanyModel } from './models';
 import { Logger } from '../../../shared/utils/logger';
 import { PayrollStatus } from '../../../domain/enums/PayrollStatus';
-
-/**
- * Repositorio de Nómina
- * Implementa la lógica de acceso a datos para las operaciones de nómina
- * Actúa como intermediario entre la capa de aplicación y la base de datos
- */
 export class PayrollRepository implements IPayrollRepository {
   private readonly logger: Logger;
   constructor() {
     this.logger = new Logger('PayrollRepository');
   }
-
-  //Crea un nuevo registro de nómina en la base de datos
   public async create(payrollData: CreatePayrollDto): Promise<Payroll> {
     try {
       const payroll = await PayrollModel.create({
@@ -33,8 +25,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Actualiza un registro de nómina existente
   public async update(id: number, payrollData: UpdatePayrollDto): Promise<Payroll> {
     try {
       const payroll = await PayrollModel.findByPk(id);   
@@ -52,8 +42,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Busca un registro de nómina por ID con detalles de la empresa
   public async findById(id: number): Promise<PayrollWithDetails | null> {
     try {
       const payroll = await PayrollModel.findByPk(id, {
@@ -74,8 +62,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Obtiene todos los registros de nómina con detalles de empresa
   public async findAll(): Promise<PayrollWithDetails[]> {
     try {
       const payrolls = await PayrollModel.findAll({
@@ -94,8 +80,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Busca un registro de nómina por documento de usuario
   public async findByUserDocument(userDocument: string): Promise<Payroll | null> {
     try {
       const payroll = await PayrollModel.findOne({
@@ -110,8 +94,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Busca un registro de nómina activo por documento de usuario
   public async findActiveByUserDocument(userDocument: string): Promise<Payroll | null> {
     try {
       const payroll = await PayrollModel.findOne({
@@ -129,8 +111,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Obtiene todas las empresas
   public async getAllCompanies(): Promise<Company[]> {
     try {
       const companies = await CompanyModel.findAll({
@@ -142,8 +122,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Obtiene una empresa por ID
   public async getCompanyById(id: number): Promise<Company | null> {
     try {
       const company = await CompanyModel.findByPk(id);
@@ -156,8 +134,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Elimina un registro de nómina por ID
   public async delete(id: number): Promise<boolean> {
     try {
       const result = await PayrollModel.destroy({
@@ -169,8 +145,6 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-
-  //Convierte un modelo de Sequelize a objeto de dominio Payroll
   private mapToPayroll(payrollModel: PayrollModel): Payroll {
     return {
       id: payrollModel.id,
@@ -182,11 +156,8 @@ export class PayrollRepository implements IPayrollRepository {
       updatedAt: payrollModel.updatedAt,
     };
   }
-
-  //Convierte un modelo de Sequelize a objeto de dominio con detalles de empresa
   private mapToPayrollWithDetails(payrollModel: PayrollModel): PayrollWithDetails {
     const payroll = this.mapToPayroll(payrollModel);
-
     if (payrollModel.company) {
       return {
         ...payroll,
@@ -199,11 +170,8 @@ export class PayrollRepository implements IPayrollRepository {
         },
       };
     }
-
     return payroll;
   }
-
-  //Convierte un modelo de Sequelize a objeto de dominio Company
   private mapToCompany(companyModel: CompanyModel): Company {
     return {
       id: companyModel.id,

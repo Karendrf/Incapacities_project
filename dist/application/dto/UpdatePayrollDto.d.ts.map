@@ -1,0 +1,1 @@
+{"version":3,"file":"UpdatePayrollDto.d.ts","sourceRoot":"","sources":["../../../src/application/dto/UpdatePayrollDto.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,kCAAkC,CAAC;AACjE,MAAM,WAAW,gBAAgB;IAC/B,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,QAAQ,CAAC,EAAE,MAAM,CAAC;IAClB,MAAM,CAAC,EAAE,aAAa,CAAC;CACxB"}

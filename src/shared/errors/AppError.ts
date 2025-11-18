@@ -1,9 +1,3 @@
-/**
-*Error personalizado de la aplicación
-*Extiende la clase Error nativa para incluir información adicional como
-*código de estado HTTP y si el error es operacional (esperado) o de programación
-*permitiendo un manejo de errores más específico y consistente en toda la aplicación
-*/
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;

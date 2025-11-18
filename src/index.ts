@@ -9,16 +9,10 @@ import { PayrollService } from './application/services/PayrollService';
 import { PayrollController } from './infrastructure/adapters/http/controllers/PayrollController';
 import { PayrollRoutes } from './infrastructure/adapters/http/routes/PayrollRoutes';
 import { CompanyRoutes } from './infrastructure/adapters/http/routes/CompaniesRoutes';
-import { AuthRoutes } from './infrastructure/adapters/http/routes/AuthRoutes';
 import { AuthMiddleware } from './infrastructure/adapters/http/middlewares/authMiddleware';
 import { ErrorHandler } from './infrastructure/adapters/http/middlewares/errorHandler';
 import { RequestLogger } from './infrastructure/adapters/http/middlewares/requestLogger';
 import { Logger } from './shared/utils/logger';
-
-/**
- * Clase principal del microservicio de nómina
- * Configura Express, middlewares, rutas y conexión a base de datos
- */
 class PayrollMicroservice {
   private app: Application;
   private readonly logger: Logger;
@@ -31,8 +25,6 @@ class PayrollMicroservice {
     this.initializeRoutes();
     this.initializeErrorHandling();
   }
-
-  //Inicializa los middlewares de Express
   private initializeMiddlewares(): void {
     this.app.use(helmet({
       contentSecurityPolicy: {
@@ -59,8 +51,6 @@ class PayrollMicroservice {
     }
     this.app.use(RequestLogger.log);
   }
-
-  //Obtiene los orígenes permitidos para CORS
   private getAllowedOrigins(): string | string[] {
     const origins = process.env.ALLOWED_ORIGINS;
     if (!origins || origins === '*') {
@@ -68,8 +58,6 @@ class PayrollMicroservice {
     }
     return origins.split(',').map(origin => origin.trim());
   }
-
-  //Inicializa todas las rutas de la aplicación sin autenticación
   private initializeRoutes(): void {
     this.app.get('/health', (_req, res) => {
       res.status(200).json({
@@ -81,7 +69,6 @@ class PayrollMicroservice {
         version: '2.0.0',
       });
     });
-    // Información de la API
     this.app.get('/', (_req, res) => {
       res.status(200).json({
         success: true,
@@ -91,14 +78,9 @@ class PayrollMicroservice {
         documentation: '/api/docs',
         authentication: {
           type: 'JWT Bearer Token',
-          endpoint: '/api/auth/login',
-          testUsers: this.getTestUsersInfo(),
+          info: 'Autenticación manejada por UsersService',
         },
         endpoints: {
-          auth: {
-            login: 'POST /api/auth/login',
-            me: 'GET /api/auth/me (requiere autenticación)',
-          },
           payrolls: {
             create: 'POST /api/payrolls (requiere admin)',
             update: 'PUT /api/payrolls/:id (requiere admin)',
@@ -114,23 +96,14 @@ class PayrollMicroservice {
         },
       });
     });
-
-    // Inicializa repositorio y servicio
     const payrollRepository = new PayrollRepository();
     const payrollService = new PayrollService(payrollRepository);
     const payrollController = new PayrollController(payrollService);
-    // Configura el repositorio en AuthMiddleware para validación de ownership
     AuthMiddleware.configure(payrollRepository);
-    // Rutas de autenticación
-    const authRoutes = new AuthRoutes();
-    this.app.use('/api/auth', authRoutes.getRouter());
-    // Rutas de nómina 
     const payrollRoutes = new PayrollRoutes(payrollController);
     this.app.use('/api/payrolls', payrollRoutes.getRouter());
-    // Rutas de empresas 
     const companyRoutes = new CompanyRoutes(payrollController);
     this.app.use('/api/companies', companyRoutes.getRouter());
-    // Manejo de rutas no encontradas
     this.app.use('*', (req, res) => {
       res.status(404).json({
         success: false,
@@ -142,50 +115,16 @@ class PayrollMicroservice {
       });
     });
   }
-
-  //Obtiene información de usuarios de prueba
-  private getTestUsersInfo(): any {
-    if (serverConfig.nodeEnv === 'development') {
-      return {
-        admin: {
-          username: 'admin',
-          password: 'admin123',
-          role: 'administrador',
-          document: '1234567890',
-        },
-        employee1: {
-          username: 'empleado1',
-          password: 'emp123',
-          role: 'empleado',
-          document: '9876543210',
-        },
-        employee2: {
-          username: 'empleado2',
-          password: 'emp123',
-          role: 'empleado',
-          document: '1122334455',
-        },
-      };
-    }
-    return 'Disponible solo en modo desarrollo';
-  }
-
-  //Inicializa el manejo global de errores
   private initializeErrorHandling(): void {
     this.app.use(ErrorHandler.handle);
   }
-
-  //Inicia el servidor
   public async start(): Promise<void> {
     try {
-      // Verifica la conexión a la base de datos
       const dbConnected = await this.db.testConnection();
       if (!dbConnected) {
         throw new Error('No se pudo conectar a la base de datos');
       }
-      // Inicializa la base de datos
       await this.db.initialize();
-      // Inicia el servidor HTTP
       this.app.listen(serverConfig.port, serverConfig.host, () => {
         this.logger.info('═'.repeat(60));
         this.logger.info(`Microservicio de Nómina`);
@@ -199,11 +138,8 @@ class PayrollMicroservice {
       process.exit(1);
     }
   }
-
-  //Apaga el servidor de forma segura
   public async shutdown(): Promise<void> {
     this.logger.info('Cerrando microservicio de forma segura...');
-    
     try {
       await this.db.close();
       this.logger.info('Base de datos cerrada correctamente');
@@ -214,31 +150,23 @@ class PayrollMicroservice {
     }
   }
 }
-
-//Inicializa el microservicio
 const microservice = new PayrollMicroservice();
-// Manejo de señales de terminación
 process.on('SIGTERM', async () => {
   console.log('\nSeñal SIGTERM recibida');
   await microservice.shutdown();
 });
-
 process.on('SIGINT', async () => {
   console.log('\nSeñal SIGINT recibida');
   await microservice.shutdown();
 });
-// Manejo de excepciones no capturadas
 process.on('uncaughtException', (error: Error) => {
   console.error('Excepción no capturada:', error);
   console.error('Stack:', error.stack);
   process.exit(1);
 });
-
 process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
   console.error('Promise rechazada sin manejar:', promise);
   console.error('Razón:', reason);
   process.exit(1);
 });
-
-// Inicia el servidor
 microservice.start();

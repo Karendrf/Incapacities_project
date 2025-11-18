@@ -5,10 +5,6 @@ import { ForbiddenError } from '../../../../shared/errors/FordibbenError';
 import { serverConfig } from '../../../config/server.config';
 import { Logger } from '../../../../shared/utils/logger';
 import { IPayrollRepository } from '../../../../application/ports/out/IPayrollRepository';
-
-/**
- * Payload esperado dentro del token JWT
- */
 export interface JwtPayload {
   userId: string;
   role: string;
@@ -16,7 +12,6 @@ export interface JwtPayload {
   iat?: number;
   exp?: number;
 }
-//Agrega el campo "user" al Request de Express
 declare global {
   namespace Express {
     interface Request {
@@ -24,24 +19,12 @@ declare global {
     }
   }
 }
-
-/**
- * Middleware encargado de autenticación y autorización
- */
 export class AuthMiddleware {
   private static readonly logger = new Logger('AuthMiddleware');
   private static payrollRepository?: IPayrollRepository;
-
-  /**
-   * Configura el repositorio para validar si un usuario es dueño del recurso
-   */
   public static configure(repository: IPayrollRepository): void {
     this.payrollRepository = repository;
   }
-
-  /**
-   * Verifica que el token JWT exista, sea válido y decodifica sus datos
-   */
   public static authenticate(req: Request, _res: Response, next: NextFunction): void {
     try {
       const authHeader = req.headers.authorization;
@@ -74,10 +57,6 @@ export class AuthMiddleware {
       }
     }
   }
-
-  /**
-   * Permite acceso solo si el usuario tiene rol de administrador
-   */
   public static requireAdmin(req: Request, _res: Response, next: NextFunction): void {
     if (!req.user) {
       return next(new UnauthorizedError('Usuario no autenticado'));
@@ -93,10 +72,6 @@ export class AuthMiddleware {
     }
     next();
   }
-
-  /**
-   * Permite acceso a usuarios con rol "empleado" o "administrador"
-   */
   public static requireEmployee(req: Request, _res: Response, next: NextFunction): void {
     if (!req.user) {
       return next(new UnauthorizedError('Usuario no autenticado'));
@@ -108,12 +83,6 @@ export class AuthMiddleware {
     }
     next();
   }
-
-  /**
-   * Permite acceso si:
-   *  - el usuario es administrador, o
-   *  - es propietario del recurso (nómina o documento)
-   */
   public static requireOwnerOrAdmin(resourceType: 'payroll' | 'document') {
     return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
       try {
@@ -135,10 +104,6 @@ export class AuthMiddleware {
       }
     };
   }
-
-  /**
-   * Comprueba si el usuario autenticado es dueño del recurso solicitado
-   */
   private static async validateOwnership(
     req: Request,
     resourceType: 'payroll' | 'document'
@@ -162,11 +127,6 @@ export class AuthMiddleware {
       return false;
     }
   }
-
-  /**
-   * Verifica el token solo si viene en la petición
-   * Si no viene, continúa sin error
-   */
   public static optionalAuthenticate(req: Request, _res: Response, next: NextFunction): void {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
