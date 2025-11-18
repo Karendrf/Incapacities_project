@@ -59,14 +59,23 @@ export class Database {
       // Inicializar modelos
       initModels(this.sequelize);
       this.logger.info('Modelos inicializados exitosamente');
-      // Sincronizar base de datos
-      await this.sequelize.sync({ 
-        alter: process.env.NODE_ENV === 'development',
-        force: false 
-      });
-      this.logger.info('Base de datos sincronizada exitosamente');
+      
+      // Solo sincronizar en desarrollo, en producción las tablas ya existen
+      if (process.env.NODE_ENV === 'development') {
+        await this.sequelize.sync({ 
+          alter: true,
+          force: false 
+        });
+        this.logger.info('Base de datos sincronizada exitosamente');
+      } else {
+        // En producción, solo verificar la conexión
+        await this.sequelize.authenticate();
+        this.logger.info('Base de datos verificada exitosamente');
+      }
+      
       await this.seedCompanies();
-      await this.seedAuthUsers();
+      // El seed de usuarios ya no es necesario ya que se manejan desde el microservicio de usuarios
+      // await this.seedAuthUsers();
     } catch (error) {
       this.logger.error('Error inicializando base de datos', error as Error);
       throw error;
