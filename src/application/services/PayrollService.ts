@@ -32,7 +32,7 @@ export class PayrollService implements IPayrollService {
     }
     try {
       const payroll = await this.payrollRepository.create(payrollData);
-      this.logger.info('Payroll created successfully', { 
+      this.logger.info('Nómina creada exitosamente', { 
         id: payroll.id, 
         userId: payroll.userId 
       });
@@ -65,7 +65,7 @@ export class PayrollService implements IPayrollService {
     }
     try {
       const updatedPayroll = await this.payrollRepository.update(id, payrollData);
-      this.logger.info('Payroll updated successfully', { id });
+      this.logger.info('Nómina actualizada exitosamente', { id });
       return updatedPayroll;
     } catch (error) {
       this.logger.error('Error updating payroll', error as Error);
@@ -128,6 +128,6 @@ export class PayrollService implements IPayrollService {
     if (!deleted) {
       throw new Error('Error al eliminar la nómina');
     }
-    this.logger.info('Payroll deleted successfully', { id });
+    this.logger.info('Nómina eliminada exitosamente', { id });
   }
 }

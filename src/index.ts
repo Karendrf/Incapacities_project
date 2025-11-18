@@ -62,9 +62,9 @@ class PayrollMicroservice {
       res.status(200).json({
         success: true,
         service: serverConfig.serviceName,
-        status: 'healthy',
+        status: 'saludable',
         timestamp: new Date().toISOString(),
-        database: 'connected',
+        database: 'conectada',
         version: '2.0.0',
       });
     });
