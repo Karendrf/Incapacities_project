@@ -1,7 +1,6 @@
 import { PayrollStatus } from '../../domain/enums/PayrollStatus';
 export interface CreatePayrollDto {
-  userDocument: string;
+  userId: number;
   companyId: number;
-  position?: string;
   status: PayrollStatus;
 }

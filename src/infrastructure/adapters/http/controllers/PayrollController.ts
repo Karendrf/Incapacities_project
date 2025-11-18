@@ -16,12 +16,11 @@ export class PayrollController {
   ): Promise<void> => {
     try {
       this.logger.info('POST /createPayroll - Creating new payroll', {
-        userDocument: req.body.userDocument,
+        userId: req.body.userId,
       });
       const createPayrollDto: CreatePayrollDto = {
-        userDocument: req.body.userDocument,
+        userId: parseInt(req.body.userId, 10),
         companyId: parseInt(req.body.companyId, 10),
-        position: req.body.position,
         status: req.body.status as PayrollStatus,
       };
       const payroll = await this.payrollService.createPayroll(createPayrollDto);
@@ -96,17 +95,17 @@ export class PayrollController {
       next(error);
     }
   };
-  public getPayrollByUserDocument = async (
+  public getPayrollByUserId = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const userDocument = req.params.document;
+      const userId = parseInt(req.params.userId, 10);
       this.logger.info(
-        `GET /getPayrollByDocument/${userDocument} - Getting payroll by user document`
+        `GET /getPayrollByUserId/${userId} - Getting payroll by user ID`
       );
-      const payroll = await this.payrollService.getPayrollByUserDocument(userDocument);
+      const payroll = await this.payrollService.getPayrollByUserId(userId);
       res.status(200).json({
         success: true,
         data: payroll,
@@ -115,18 +114,18 @@ export class PayrollController {
       next(error);
     }
   };
-  public getActivePayrollByUserDocument = async (
+  public getActivePayrollByUserId = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
-      const userDocument = req.params.document;
+      const userId = parseInt(req.params.userId, 10);
       this.logger.info(
-        `GET /getActivePayrollByDocument/${userDocument} - Getting active payroll by user document`
+        `GET /getActivePayrollByUserId/${userId} - Getting active payroll by user ID`
       );
-      const payroll = await this.payrollService.getActivePayrollByUserDocument(
-        userDocument
+      const payroll = await this.payrollService.getActivePayrollByUserId(
+        userId
       );
       res.status(200).json({
         success: true,

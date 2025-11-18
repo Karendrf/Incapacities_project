@@ -14,11 +14,9 @@ export class PayrollService implements IPayrollService {
     this.logger = new Logger('PayrollService');
   }
   public async createPayroll(payrollData: CreatePayrollDto): Promise<Payroll> {
-    this.logger.info('Creating new payroll', { userDocument: payrollData.userDocument });
-    Validator.validateRequiredFields(payrollData, ['userDocument', 'companyId', 'status']);
-    if (!Validator.isValidDocument(payrollData.userDocument)) {
-      throw new ValidationError('Formato de documento inválido. Debe contener entre 6 y 15 dígitos');
-    }
+    this.logger.info('Creating new payroll', { userId: payrollData.userId });
+    Validator.validateRequiredFields(payrollData, ['userId', 'companyId', 'status']);
+    
     const company = await this.payrollRepository.getCompanyById(payrollData.companyId);
     if (!company) {
       throw new NotFoundError(`Empresa con ID ${payrollData.companyId} no encontrada`);
@@ -26,20 +24,17 @@ export class PayrollService implements IPayrollService {
     if (!Validator.isValidStatus(payrollData.status)) {
       throw new ValidationError('Estado de nómina inválido. Use: activo o retirado');
     }
-    const existingPayroll = await this.payrollRepository.findByUserDocument(payrollData.userDocument);
+    const existingPayroll = await this.payrollRepository.findByUserId(payrollData.userId);
     if (existingPayroll) {
       throw new ValidationError(
-        `El usuario con documento ${payrollData.userDocument} ya tiene una nómina registrada`
+        `El usuario con ID ${payrollData.userId} ya tiene una nómina registrada`
       );
-    }
-    if (payrollData.position) {
-      payrollData.position = Validator.sanitizeString(payrollData.position);
     }
     try {
       const payroll = await this.payrollRepository.create(payrollData);
       this.logger.info('Payroll created successfully', { 
         id: payroll.id, 
-        userDocument: payroll.userDocument 
+        userId: payroll.userId 
       });
       return payroll;
     } catch (error) {
@@ -92,26 +87,26 @@ export class PayrollService implements IPayrollService {
     this.logger.info('Getting all payrolls');
     return await this.payrollRepository.findAll();
   }
-  public async getPayrollByUserDocument(userDocument: string): Promise<Payroll> {
-    this.logger.info('Getting payroll by user document', { userDocument });
-    if (!Validator.isValidDocument(userDocument)) {
-      throw new ValidationError('Formato de documento inválido. Debe contener entre 6 y 15 dígitos');
+  public async getPayrollByUserId(userId: number): Promise<Payroll> {
+    this.logger.info('Getting payroll by user ID', { userId });
+    if (!Validator.isPositiveInteger(userId)) {
+      throw new ValidationError('ID de usuario inválido');
     }
-    const payroll = await this.payrollRepository.findByUserDocument(userDocument);
+    const payroll = await this.payrollRepository.findByUserId(userId);
     if (!payroll) {
-      throw new NotFoundError(`No se encontró nómina para el documento ${userDocument}`);
+      throw new NotFoundError(`No se encontró nómina para el usuario con ID ${userId}`);
     }
     return payroll;
   }
-  public async getActivePayrollByUserDocument(userDocument: string): Promise<Payroll> {
-    this.logger.info('Getting active payroll by user document', { userDocument });
-    if (!Validator.isValidDocument(userDocument)) {
-      throw new ValidationError('Formato de documento inválido. Debe contener entre 6 y 15 dígitos');
+  public async getActivePayrollByUserId(userId: number): Promise<Payroll> {
+    this.logger.info('Getting active payroll by user ID', { userId });
+    if (!Validator.isPositiveInteger(userId)) {
+      throw new ValidationError('ID de usuario inválido');
     }
-    const payroll = await this.payrollRepository.findActiveByUserDocument(userDocument);
+    const payroll = await this.payrollRepository.findActiveByUserId(userId);
     if (!payroll) {
       throw new NotFoundError(
-        `No se encontró nómina activa para el documento ${userDocument}`
+        `No se encontró nómina activa para el usuario con ID ${userId}`
       );
     }
     return payroll;

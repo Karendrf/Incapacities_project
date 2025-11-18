@@ -7,8 +7,8 @@ export interface IPayrollService {
   updatePayroll(id: number, payrollData: UpdatePayrollDto): Promise<Payroll>;
   getPayrollById(id: number): Promise<PayrollWithDetails>;
   getAllPayrolls(): Promise<PayrollWithDetails[]>;
-  getPayrollByUserDocument(userDocument: string): Promise<Payroll>;
-  getActivePayrollByUserDocument(userDocument: string): Promise<Payroll>;
+  getPayrollByUserId(userId: number): Promise<Payroll>;
+  getActivePayrollByUserId(userId: number): Promise<Payroll>;
   getAllCompanies(): Promise<Company[]>;
   deletePayroll(id: number): Promise<void>;
 }

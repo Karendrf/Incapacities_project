@@ -1,9 +1,8 @@
 import { PayrollStatus } from '../enums/PayrollStatus';
 export interface Payroll {
   id: number;
-  userDocument: string;
+  userId: number;
   companyId: number;
-  position?: string;
   status: PayrollStatus;
   createdAt: Date;
   updatedAt: Date;

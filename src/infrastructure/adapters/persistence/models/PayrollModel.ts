@@ -3,9 +3,8 @@ import { CompanyModel } from './CompanyModel';
 import { PayrollStatus } from '../../../../domain/enums/PayrollStatus';
 export class PayrollModel extends Model {
   public id!: number;
-  public userDocument!: string;
+  public userId!: number;
   public companyId!: number;
-  public position!: string | null; 
   public status!: PayrollStatus;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -21,36 +20,35 @@ export const initPayrollModel = (sequelize: Sequelize): typeof PayrollModel => {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+        field: 'id_payroll',
       },
-      userDocument: {
-        type: DataTypes.STRING(50),
+      userId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'user_document',
-        validate: {
-          notEmpty: true,
-          is: /^[0-9]{6,15}$/,
+        field: 'id_user',
+        references: {
+          model: 'users',
+          key: 'id_user',
         },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
       },
       companyId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'company_id',
+        field: 'id_company',
         references: {
           model: 'companies',
-          key: 'id',
+          key: 'id_company',
         },
         onDelete: 'CASCADE', 
         onUpdate: 'CASCADE',
-      },
-      position: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM(...Object.values(PayrollStatus)),
         allowNull: false,
         validate: {
-          isIn: [Object.values(PayrollStatus)], // Valida que sea un valor del enum
+          isIn: [Object.values(PayrollStatus)],
         },
       },
     },
@@ -61,16 +59,16 @@ export const initPayrollModel = (sequelize: Sequelize): typeof PayrollModel => {
       underscored: true,
       indexes: [
         {
-          fields: ['user_document'], //Índice en documento de usuario
+          fields: ['id_user'],
         },
         {
-          fields: ['company_id'], //Índice en ID de empresa
+          fields: ['id_company'],
         },
         {
-          fields: ['status'], //Índice en estado
+          fields: ['status'],
         },
         {
-          fields: ['user_document', 'status'], //Índice compuesto para búsquedas combinadas
+          fields: ['id_user', 'status'],
         },
       ],
     }

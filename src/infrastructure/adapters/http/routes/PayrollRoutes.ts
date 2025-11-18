@@ -34,16 +34,16 @@ export class PayrollRoutes {
       this.payrollController.getAllPayrolls
     );
     this.router.get(
-      '/document/:document',
-      PayrollValidations.getByDocument(),
+      '/user/:userId',
+      PayrollValidations.getByUserId(),
       AuthMiddleware.requireOwnerOrAdmin,
-      this.payrollController.getPayrollByUserDocument
+      this.payrollController.getPayrollByUserId
     );
     this.router.get(
-      '/document/:document/active',
-      PayrollValidations.getByDocument(),
+      '/user/:userId/active',
+      PayrollValidations.getByUserId(),
       AuthMiddleware.requireOwnerOrAdmin,
-      this.payrollController.getActivePayrollByUserDocument
+      this.payrollController.getActivePayrollByUserId
     );
     this.router.delete(
       '/:id',

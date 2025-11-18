@@ -1,34 +1,34 @@
 import { body, param } from 'express-validator';
 import { ValidateRequest } from '../middlewares/validateRequest';
 import { PayrollStatus } from '../../../../domain/enums/PayrollStatus';
-const VALIDATION_PATTERNS = {
-  DOCUMENT: /^[0-9]{6,15}$/,
-} as const;
+
 const VALIDATION_MESSAGES = {
-  DOCUMENT_REQUIRED: 'El documento del usuario es requerido',
-  DOCUMENT_INVALID: 'Formato de documento inválido. Debe contener entre 6 y 15 dígitos',
+  USER_ID_REQUIRED: 'El ID del usuario es requerido',
+  USER_ID_INVALID: 'El ID del usuario debe ser un número positivo',
   COMPANY_ID_REQUIRED: 'El ID de la empresa es requerido',
   COMPANY_ID_INVALID: 'El ID de la empresa debe ser un número positivo',
-  POSITION_INVALID: 'El cargo debe ser un texto',
-  POSITION_TOO_LONG: 'El cargo no puede exceder 100 caracteres',
   STATUS_REQUIRED: 'El estado es requerido',
   STATUS_INVALID: `El estado debe ser: ${Object.values(PayrollStatus).join(' o ')}`,
   ID_INVALID: 'ID inválido. Debe ser un número positivo',
 } as const;
 export class PayrollValidations {
-  private static documentValidation() {
-    return body('userDocument')
-      .trim()
+  private static userIdValidation() {
+    return body('userId')
       .notEmpty()
-      .withMessage(VALIDATION_MESSAGES.DOCUMENT_REQUIRED)
-      .matches(VALIDATION_PATTERNS.DOCUMENT)
-      .withMessage(VALIDATION_MESSAGES.DOCUMENT_INVALID);
+      .withMessage(VALIDATION_MESSAGES.USER_ID_REQUIRED)
+      .isNumeric()
+      .withMessage(VALIDATION_MESSAGES.USER_ID_INVALID)
+      .toInt()
+      .custom((value: number) => value > 0)
+      .withMessage(VALIDATION_MESSAGES.USER_ID_INVALID);
   }
-  private static documentParamValidation() {
-    return param('document')
-      .trim()
-      .matches(VALIDATION_PATTERNS.DOCUMENT)
-      .withMessage(VALIDATION_MESSAGES.DOCUMENT_INVALID);
+  private static userIdParamValidation() {
+    return param('userId')
+      .isNumeric()
+      .withMessage(VALIDATION_MESSAGES.USER_ID_INVALID)
+      .toInt()
+      .custom((value: number) => value > 0)
+      .withMessage(VALIDATION_MESSAGES.USER_ID_INVALID);
   }
   private static companyIdValidation(optional: boolean = false) {
     const validation = body('companyId');
@@ -42,15 +42,6 @@ export class PayrollValidations {
     return validation
       .isInt({ min: 1 })
       .withMessage(VALIDATION_MESSAGES.COMPANY_ID_INVALID);
-  }
-  private static positionValidation() {
-    return body('position')
-      .optional()
-      .trim()
-      .isString()
-      .withMessage(VALIDATION_MESSAGES.POSITION_INVALID)
-      .isLength({ max: 100 })
-      .withMessage(VALIDATION_MESSAGES.POSITION_TOO_LONG);
   }
   private static statusValidation(optional: boolean = false) {
     const validation = body('status');
@@ -72,9 +63,8 @@ export class PayrollValidations {
   }
   public static create() {
     return ValidateRequest.validate([
-      this.documentValidation(),
+      this.userIdValidation(),
       this.companyIdValidation(false),
-      this.positionValidation(),
       this.statusValidation(false),
     ]);
   }
@@ -82,7 +72,6 @@ export class PayrollValidations {
     return ValidateRequest.validate([
       this.idParamValidation(),
       this.companyIdValidation(true),
-      this.positionValidation(),
       this.statusValidation(true),
     ]);
   }
@@ -91,9 +80,9 @@ export class PayrollValidations {
       this.idParamValidation(),
     ]);
   }
-  public static getByDocument() {
+  public static getByUserId() {
     return ValidateRequest.validate([
-      this.documentParamValidation(),
+      this.userIdParamValidation(),
     ]);
   }
   public static delete() {

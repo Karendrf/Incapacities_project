@@ -60,7 +60,7 @@ export class AuthMiddleware {
       return next(new UnauthorizedError('Usuario no autenticado'));
     }
 
-    if (req.user.role !== 'admin') {
+    if (req.user.role.toUpperCase() !== 'ADMIN') {
       return next(new ForbiddenError('Acceso denegado. Se requiere rol de administrador'));
     }
 
@@ -80,14 +80,14 @@ export class AuthMiddleware {
       return next(new UnauthorizedError('Usuario no autenticado'));
     }
 
-    if (req.user.role === 'admin') {
+    if (req.user.role.toUpperCase() === 'ADMIN') {
       return next();
     }
 
-    const requestedDocument = req.params.document;
+    const requestedUserId = req.params.userId;
     const requestedId = req.params.id;
 
-    if (requestedDocument && req.user.id.toString() !== requestedDocument) {
+    if (requestedUserId && req.user.id.toString() !== requestedUserId) {
       return next(new ForbiddenError('Acceso denegado'));
     }
 

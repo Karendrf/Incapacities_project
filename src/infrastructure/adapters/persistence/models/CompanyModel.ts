@@ -15,6 +15,7 @@ export const initCompanyModel = (sequelize: Sequelize): typeof CompanyModel => {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+        field: 'id_company',
       },
       name: {
         type: DataTypes.STRING(255),

@@ -14,9 +14,8 @@ export class PayrollRepository implements IPayrollRepository {
   public async create(payrollData: CreatePayrollDto): Promise<Payroll> {
     try {
       const payroll = await PayrollModel.create({
-        userDocument: payrollData.userDocument,
+        userId: payrollData.userId,
         companyId: payrollData.companyId,
-        position: payrollData.position || null,
         status: payrollData.status,
       });
       return this.mapToPayroll(payroll);
@@ -80,10 +79,10 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-  public async findByUserDocument(userDocument: string): Promise<Payroll | null> {
+  public async findByUserId(userId: number): Promise<Payroll | null> {
     try {
       const payroll = await PayrollModel.findOne({
-        where: { userDocument },
+        where: { userId },
       });
       if (!payroll) {
         return null;
@@ -94,11 +93,11 @@ export class PayrollRepository implements IPayrollRepository {
       throw error;
     }
   }
-  public async findActiveByUserDocument(userDocument: string): Promise<Payroll | null> {
+  public async findActiveByUserId(userId: number): Promise<Payroll | null> {
     try {
       const payroll = await PayrollModel.findOne({
         where: {
-          userDocument,
+          userId,
           status: PayrollStatus.ACTIVO,
         },
       });
@@ -148,9 +147,8 @@ export class PayrollRepository implements IPayrollRepository {
   private mapToPayroll(payrollModel: PayrollModel): Payroll {
     return {
       id: payrollModel.id,
-      userDocument: payrollModel.userDocument,
+      userId: payrollModel.userId,
       companyId: payrollModel.companyId,
-      position: payrollModel.position || undefined,
       status: payrollModel.status,
       createdAt: payrollModel.createdAt,
       updatedAt: payrollModel.updatedAt,
