@@ -8,11 +8,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const UnauthorizedError_1 = require("../../../../shared/errors/UnauthorizedError");
 const FordibbenError_1 = require("../../../../shared/errors/FordibbenError");
 const server_config_1 = require("../../../config/server.config");
-const logger_1 = require("../../../../shared/utils/logger");
 class AuthMiddleware {
-    static configure(repository) {
-        this.payrollRepository = repository;
-    }
     static authenticate(req, _res, next) {
         try {
             const authHeader = req.headers.authorization;
@@ -26,14 +22,10 @@ class AuthMiddleware {
                 throw new UnauthorizedError_1.UnauthorizedError('Formato de token inválido');
             }
             const decoded = jsonwebtoken_1.default.verify(token, server_config_1.serverConfig.jwtSecret);
-            if (!decoded.userId || !decoded.role || !decoded.document) {
+            if (!decoded.id || !decoded.role) {
                 throw new UnauthorizedError_1.UnauthorizedError('Token inválido: datos incompletos');
             }
             req.user = decoded;
-            AuthMiddleware.logger.debug('Usuario autenticado', {
-                userId: decoded.userId,
-                role: decoded.role,
-            });
             next();
         }
         catch (error) {
@@ -41,7 +33,7 @@ class AuthMiddleware {
                 next(new UnauthorizedError_1.UnauthorizedError('Token inválido'));
             }
             else if (error instanceof jsonwebtoken_1.default.TokenExpiredError) {
-                next(new UnauthorizedError_1.UnauthorizedError('Token expirado. Por favor, inicie sesión nuevamente'));
+                next(new UnauthorizedError_1.UnauthorizedError('Token expirado'));
             }
             else {
                 next(error);
@@ -52,11 +44,7 @@ class AuthMiddleware {
         if (!req.user) {
             return next(new UnauthorizedError_1.UnauthorizedError('Usuario no autenticado'));
         }
-        if (req.user.role !== 'administrador') {
-            AuthMiddleware.logger.warn('Acceso denegado - rol insuficiente', {
-                userId: req.user.userId,
-                role: req.user.role,
-            });
+        if (req.user.role !== 'admin') {
             return next(new FordibbenError_1.ForbiddenError('Acceso denegado. Se requiere rol de administrador'));
         }
         next();
@@ -65,73 +53,25 @@ class AuthMiddleware {
         if (!req.user) {
             return next(new UnauthorizedError_1.UnauthorizedError('Usuario no autenticado'));
         }
-        if (req.user.role !== 'empleado' && req.user.role !== 'administrador') {
-            return next(new FordibbenError_1.ForbiddenError('Acceso denegado. Se requiere rol de empleado o administrador'));
-        }
         next();
     }
-    static requireOwnerOrAdmin(resourceType) {
-        return async (req, _res, next) => {
-            try {
-                if (!req.user) {
-                    return next(new UnauthorizedError_1.UnauthorizedError('Usuario no autenticado'));
-                }
-                if (req.user.role === 'administrador') {
-                    return next();
-                }
-                const isOwner = await AuthMiddleware.validateOwnership(req, resourceType);
-                if (!isOwner) {
-                    return next(new FordibbenError_1.ForbiddenError('No tiene permisos para acceder a este recurso'));
-                }
-                next();
-            }
-            catch (error) {
-                next(error);
-            }
-        };
-    }
-    static async validateOwnership(req, resourceType) {
-        if (!req.user || !this.payrollRepository) {
-            return false;
+    static requireOwnerOrAdmin(req, _res, next) {
+        if (!req.user) {
+            return next(new UnauthorizedError_1.UnauthorizedError('Usuario no autenticado'));
         }
-        try {
-            if (resourceType === 'document') {
-                return req.user.document === req.params.document;
-            }
-            if (resourceType === 'payroll') {
-                const payrollId = parseInt(req.params.id, 10);
-                const payroll = await this.payrollRepository.findById(payrollId);
-                if (!payroll)
-                    return false;
-                return payroll.userDocument === req.user.document;
-            }
-            return false;
-        }
-        catch (error) {
-            AuthMiddleware.logger.error('Error validando propiedad del recurso', error);
-            return false;
-        }
-    }
-    static optionalAuthenticate(req, _res, next) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) {
+        if (req.user.role === 'admin') {
             return next();
         }
-        try {
-            const token = authHeader.startsWith('Bearer ')
-                ? authHeader.substring(7)
-                : authHeader;
-            if (token) {
-                const decoded = jsonwebtoken_1.default.verify(token, server_config_1.serverConfig.jwtSecret);
-                req.user = decoded;
-            }
+        const requestedDocument = req.params.document;
+        const requestedId = req.params.id;
+        if (requestedDocument && req.user.id.toString() !== requestedDocument) {
+            return next(new FordibbenError_1.ForbiddenError('Acceso denegado'));
         }
-        catch (_error) {
-            AuthMiddleware.logger.debug('Token opcional inválido o expirado');
+        if (requestedId && req.user.id.toString() !== requestedId) {
+            return next(new FordibbenError_1.ForbiddenError('Acceso denegado'));
         }
         next();
     }
 }
 exports.AuthMiddleware = AuthMiddleware;
-AuthMiddleware.logger = new logger_1.Logger('AuthMiddleware');
 //# sourceMappingURL=authMiddleware.js.map

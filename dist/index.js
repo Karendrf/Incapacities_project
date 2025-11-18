@@ -14,7 +14,6 @@ const PayrollService_1 = require("./application/services/PayrollService");
 const PayrollController_1 = require("./infrastructure/adapters/http/controllers/PayrollController");
 const PayrollRoutes_1 = require("./infrastructure/adapters/http/routes/PayrollRoutes");
 const CompaniesRoutes_1 = require("./infrastructure/adapters/http/routes/CompaniesRoutes");
-const authMiddleware_1 = require("./infrastructure/adapters/http/middlewares/authMiddleware");
 const errorHandler_1 = require("./infrastructure/adapters/http/middlewares/errorHandler");
 const requestLogger_1 = require("./infrastructure/adapters/http/middlewares/requestLogger");
 const logger_1 = require("./shared/utils/logger");
@@ -100,7 +99,6 @@ class PayrollMicroservice {
         const payrollRepository = new PayrollRepository_1.PayrollRepository();
         const payrollService = new PayrollService_1.PayrollService(payrollRepository);
         const payrollController = new PayrollController_1.PayrollController(payrollService);
-        authMiddleware_1.AuthMiddleware.configure(payrollRepository);
         const payrollRoutes = new PayrollRoutes_1.PayrollRoutes(payrollController);
         this.app.use('/api/payrolls', payrollRoutes.getRouter());
         const companyRoutes = new CompaniesRoutes_1.CompanyRoutes(payrollController);

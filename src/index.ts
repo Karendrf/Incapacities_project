@@ -9,7 +9,6 @@ import { PayrollService } from './application/services/PayrollService';
 import { PayrollController } from './infrastructure/adapters/http/controllers/PayrollController';
 import { PayrollRoutes } from './infrastructure/adapters/http/routes/PayrollRoutes';
 import { CompanyRoutes } from './infrastructure/adapters/http/routes/CompaniesRoutes';
-import { AuthMiddleware } from './infrastructure/adapters/http/middlewares/authMiddleware';
 import { ErrorHandler } from './infrastructure/adapters/http/middlewares/errorHandler';
 import { RequestLogger } from './infrastructure/adapters/http/middlewares/requestLogger';
 import { Logger } from './shared/utils/logger';
@@ -99,7 +98,6 @@ class PayrollMicroservice {
     const payrollRepository = new PayrollRepository();
     const payrollService = new PayrollService(payrollRepository);
     const payrollController = new PayrollController(payrollService);
-    AuthMiddleware.configure(payrollRepository);
     const payrollRoutes = new PayrollRoutes(payrollController);
     this.app.use('/api/payrolls', payrollRoutes.getRouter());
     const companyRoutes = new CompanyRoutes(payrollController);

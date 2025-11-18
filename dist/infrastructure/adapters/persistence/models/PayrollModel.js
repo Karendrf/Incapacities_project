@@ -19,7 +19,7 @@ const initPayrollModel = (sequelize) => {
             allowNull: false,
             field: 'user_document',
             validate: {
-                notEmpty: true, //No permite cadenas vacías
+                notEmpty: true,
                 is: /^[0-9]{6,15}$/,
             },
         },

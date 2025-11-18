@@ -14,10 +14,10 @@ class PayrollRoutes {
         this.router.use(authMiddleware_1.AuthMiddleware.authenticate);
         this.router.post('/', authMiddleware_1.AuthMiddleware.requireAdmin, PayrollValidations_1.PayrollValidations.create(), this.payrollController.createPayroll);
         this.router.put('/:id', authMiddleware_1.AuthMiddleware.requireAdmin, PayrollValidations_1.PayrollValidations.update(), this.payrollController.updatePayroll);
-        this.router.get('/:id', PayrollValidations_1.PayrollValidations.getById(), authMiddleware_1.AuthMiddleware.requireOwnerOrAdmin('payroll'), this.payrollController.getPayrollById);
+        this.router.get('/:id', PayrollValidations_1.PayrollValidations.getById(), authMiddleware_1.AuthMiddleware.requireOwnerOrAdmin, this.payrollController.getPayrollById);
         this.router.get('/', authMiddleware_1.AuthMiddleware.requireAdmin, this.payrollController.getAllPayrolls);
-        this.router.get('/document/:document', PayrollValidations_1.PayrollValidations.getByDocument(), authMiddleware_1.AuthMiddleware.requireOwnerOrAdmin('document'), this.payrollController.getPayrollByUserDocument);
-        this.router.get('/document/:document/active', PayrollValidations_1.PayrollValidations.getByDocument(), authMiddleware_1.AuthMiddleware.requireOwnerOrAdmin('document'), this.payrollController.getActivePayrollByUserDocument);
+        this.router.get('/document/:document', PayrollValidations_1.PayrollValidations.getByDocument(), authMiddleware_1.AuthMiddleware.requireOwnerOrAdmin, this.payrollController.getPayrollByUserDocument);
+        this.router.get('/document/:document/active', PayrollValidations_1.PayrollValidations.getByDocument(), authMiddleware_1.AuthMiddleware.requireOwnerOrAdmin, this.payrollController.getActivePayrollByUserDocument);
         this.router.delete('/:id', authMiddleware_1.AuthMiddleware.requireAdmin, PayrollValidations_1.PayrollValidations.delete(), this.payrollController.deletePayroll);
     }
     getRouter() {

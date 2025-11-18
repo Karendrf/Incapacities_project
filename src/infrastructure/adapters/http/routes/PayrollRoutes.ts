@@ -25,7 +25,7 @@ export class PayrollRoutes {
     this.router.get(
       '/:id',
       PayrollValidations.getById(),
-      AuthMiddleware.requireOwnerOrAdmin('payroll'),
+      AuthMiddleware.requireOwnerOrAdmin,
       this.payrollController.getPayrollById
     );
     this.router.get(
@@ -36,13 +36,13 @@ export class PayrollRoutes {
     this.router.get(
       '/document/:document',
       PayrollValidations.getByDocument(),
-      AuthMiddleware.requireOwnerOrAdmin('document'),
+      AuthMiddleware.requireOwnerOrAdmin,
       this.payrollController.getPayrollByUserDocument
     );
     this.router.get(
       '/document/:document/active',
       PayrollValidations.getByDocument(),
-      AuthMiddleware.requireOwnerOrAdmin('document'),
+      AuthMiddleware.requireOwnerOrAdmin,
       this.payrollController.getActivePayrollByUserDocument
     );
     this.router.delete(
